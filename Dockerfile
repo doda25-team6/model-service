@@ -18,8 +18,8 @@ COPY smsspamcollection/ ./smsspamcollection
 
 RUN mkdir -p output
 
-ENV SERVER_PORT=8081
-
-EXPOSE 8081
+# F6: configurable port
+ENV SERVER_PORT=${SERVER_PORT:-8081}
+EXPOSE ${SERVER_PORT}
 
 CMD ["python", "src/serve_model.py"]
