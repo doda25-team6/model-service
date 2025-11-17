@@ -5,6 +5,7 @@ import joblib
 from flask import Flask, jsonify, request
 from flasgger import Swagger
 import pandas as pd
+import os
 
 from text_preprocessing import prepare, _extract_message_len, _text_process
 
@@ -50,4 +51,5 @@ def predict():
 
 if __name__ == '__main__':
     #clf = joblib.load('output/model.joblib')
-    app.run(host="0.0.0.0", port=8081, debug=True)
+    port = int(os.getenv("SERVER_PORT", 8081))
+    app.run(host="0.0.0.0", port=port, debug=True)
