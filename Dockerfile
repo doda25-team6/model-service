@@ -15,6 +15,7 @@ COPY --from=builder /install /usr/local
 
 COPY src/ ./src
 COPY smsspamcollection/ ./smsspamcollection
+COPY output/ ./output
 
 RUN mkdir -p output
 
