@@ -1,0 +1,58 @@
+name: On-demand training, versioning, and release of the model
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'The Git tag/Release name'
+        required: true
+        type: string
+
+jobs:
+  train-version-release:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # inherently includes read access
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Train model
+        run: |
+          echo "Current working directory: $PWD"
+          docker run --rm -v ./:/root/sms python:3.12.9-slim bash"
+          cd /root/sms/
+          pip install -r requirements.txt
+          mkdir output
+          python src/read_data.py
+          python src/text_preprocessing.py
+
+      - name: Version model
+        id: get_version
+        run: |
+          VERSION=${{ github.event.inputs.tag_name }}
+          echo "Versioning files with tag: $VERSION"
+          
+          # Iterate through files in the 'output' directory and rename them
+          for file in output/*; do
+            if [ -f "$file" ]; then
+              # Get the filename without the path, add the version suffix, keep the extension
+              filename=$(basename "$file")
+              extension="${filename##*.}"
+              filename_without_ext="${filename%.*}"
+              new_filename="${filename_without_ext}-${VERSION}.${extension}"
+              mv "$file" "output/$new_filename"
+              echo "Renamed $filename to $new_filename"
+            fi
+          done
+
+
+      - name: Create release and upload model output file
+        env: 
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=${{ github.event.inputs.tag_name }}
+          gh release create "$TAG" ./output/* \
+            --title "Release $TAG of Spam-Checking Model" \
+            --notes "Automated release notes"
