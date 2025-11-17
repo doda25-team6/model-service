@@ -1,6 +1,9 @@
 name: On-demand training, versioning, and release of the model
 
 on:
+  push: # temporarily for testing
+    branches:
+      - '<your-branch-name>'
   workflow_dispatch:
     inputs:
       tag_name:
@@ -46,7 +49,6 @@ jobs:
               echo "Renamed $filename to $new_filename"
             fi
           done
-
 
       - name: Create release and upload model output file
         env: 
