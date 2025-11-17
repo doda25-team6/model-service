@@ -24,8 +24,8 @@ jobs:
       - name: Train model
         run: |
           echo "Current working directory: $PWD"
-          docker run --rm -v ./:/root/sms python:3.12.9-slim bash
-          cd /root/sms/
+          docker run --rm -v ./:/app python:3.12.9-slim bash
+          cd /app
           pip install -r requirements.txt
           mkdir output
           python src/read_data.py
