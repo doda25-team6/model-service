@@ -77,8 +77,10 @@ jobs:
       - name: Create release and upload model output file
         env: 
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.inputs.tag_name || github.sha }} # temporary fallback tag for push trigger
         run: |
-          TAG=${{ github.event.inputs.tag_name }}
-          gh release create "$TAG" ./output/* \
-            --title "Release $TAG of spam-checking model files" \
+          gh release create "$RELEASE_TAG" ./output/* \
+            --title "Release $RELEASE_TAG of spam-checking model files" \
             --notes "Automated release notes"
+
+          gh release delete "$RELEASE_TAG" --yes # remove temp tag after usage
