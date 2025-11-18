@@ -25,11 +25,11 @@ jobs:
         run: |
           echo "Current working directory: $PWD"
           docker run --rm -v ./:/app -w /app python:3.12.9-slim bash -c "
-          pip install -r requirements.txt
-          mkdir output
-          python src/read_data.py
-          python src/text_preprocessing.py
-        "
+            pip install -r requirements.txt
+            mkdir output
+            python src/read_data.py
+            python src/text_preprocessing.py
+          "
 
       - name: Version model
         id: get_version
