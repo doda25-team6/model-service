@@ -21,7 +21,10 @@ jobs:
     # to avoid permission issues
     container:
           image: python:3.12.9-slim
-          options: --user root 
+          options: --user root
+
+    outputs:
+      version: steps.get_version.outputs.VERSION
 
     steps:
       - uses: actions/checkout@v5
@@ -34,12 +37,13 @@ jobs:
           python src/read_data.py
           python src/text_preprocessing.py
 
-      - name: Version model
+      - name: Extract version
         id: get_version
         run: |
-          VERSION=${{ github.event.inputs.tag_name }}
-          echo "Versioning files with tag: $VERSION"
-          
+          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Version Model
+        run: |
           # Iterate through files in the 'output' directory and rename them
           for file in output/*; do
             if [ -f "$file" ]; then
@@ -47,7 +51,7 @@ jobs:
               filename=$(basename "$file")
               extension="${filename##*.}"
               filename_without_ext="${filename%.*}"
-              new_filename="${filename_without_ext}-${VERSION}.${extension}"
+              new_filename="${filename_without_ext}-${steps.get_version.outputs.VERSION}.${extension}"
               mv "$file" "output/$new_filename"
               echo "Renamed $filename to $new_filename"
             fi
@@ -77,10 +81,8 @@ jobs:
       - name: Create release and upload model output file
         env: 
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_TAG: ${{ github.event.inputs.tag_name || github.sha }} # temporary fallback tag for push trigger
         run: |
+          RELEASE_TAG=${{ needs.train-and-version.outputs.version }}
           gh release create "$RELEASE_TAG" ./output/* \
             --title "Release $RELEASE_TAG of spam-checking model files" \
             --notes "Automated release notes"
-
-          gh release delete "$RELEASE_TAG" --yes # remove temp tag after usage
