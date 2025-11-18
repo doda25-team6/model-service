@@ -43,6 +43,8 @@ jobs:
           echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
       - name: Version Model
+        env:
+          JOB_VERSION:  ${{ steps.get_version.outputs.VERSION }}
         run: |
           # Iterate through files in the 'output' directory and rename them
           for file in output/*; do
@@ -51,7 +53,7 @@ jobs:
               filename=$(basename "$file")
               extension="${filename##*.}"
               filename_without_ext="${filename%.*}"
-              new_filename="${filename_without_ext}-${steps.get_version.outputs.VERSION}.${extension}"
+              new_filename="${filename_without_ext}-${JOB_VERSION}.${extension}"
               mv "$file" "output/$new_filename"
               echo "Renamed $filename to $new_filename"
             fi
