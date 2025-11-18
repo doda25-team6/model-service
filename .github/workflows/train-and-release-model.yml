@@ -1,7 +1,7 @@
 name: On-demand training, versioning, and release of the model
 
 on:
-  push: # temporarily for testing
+  push: # temporarily used for testing
     branches:
       - 'f9-automated-training-and-release-of-models'
   workflow_dispatch:
@@ -12,11 +12,16 @@ on:
         type: string
 
 jobs:
-  train-version-release:
-
+  train-and-version:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # inherently includes read access
+      contents: read # write access not needed in this job
+
+    # run training and versioning inside the docker container
+    # to avoid permission issues
+    container:
+          image: python:3.12.9-slim
+          options: --user root 
 
     steps:
       - uses: actions/checkout@v5
@@ -24,14 +29,10 @@ jobs:
       - name: Train model
         run: |
           echo "Current working directory: $PWD"
-          docker run --rm -v ./:/app -w /app \
-            --user $(id -u):$(id -g) \
-            python:3.12.9-slim bash -c "
-            pip install -r requirements.txt
-            mkdir output
-            python src/read_data.py
-            python src/text_preprocessing.py
-          "
+          pip install -r requirements.txt
+          mkdir output
+          python src/read_data.py
+          python src/text_preprocessing.py
 
       - name: Version model
         id: get_version
@@ -52,11 +53,32 @@ jobs:
             fi
           done
 
+      - name: Upload versioned model files
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-output-files
+          path: output
+          
+  release:
+    runs-on: ubuntu-latest
+    needs: train-and-version
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Download versioned model files
+        uses: actions/download-artifact@v4
+        with:
+          name: model-output-files
+          path: output/
+      
       - name: Create release and upload model output file
         env: 
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG=${{ github.event.inputs.tag_name }}
           gh release create "$TAG" ./output/* \
-            --title "Release $TAG of Spam-Checking Model" \
+            --title "Release $TAG of spam-checking model files" \
             --notes "Automated release notes"
