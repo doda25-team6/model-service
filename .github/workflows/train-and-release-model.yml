@@ -26,13 +26,13 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Build local image
+        run: docker build -t model-trainer .
+
       - name: Train model
         run: |
-          echo "Current working directory: $PWD"
-          pip install -r requirements.txt
-          mkdir output
-          python src/read_data.py
-          python src/text_preprocessing.py
+          mkdir -p output
+          docker run -v $PWD/output:/app/output model-trainer
 
       - name: Extract version
         id: get_version
