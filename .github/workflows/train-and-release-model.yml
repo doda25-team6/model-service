@@ -17,12 +17,6 @@ jobs:
     permissions:
       contents: read # write access not needed in this job
 
-    # run training and versioning inside the docker container
-    # to avoid permission issues
-    container:
-          image: python:3.12.9-slim
-          options: --user root
-
     outputs:
       version: steps.get_version.outputs.VERSION
 
