@@ -1,9 +1,6 @@
 name: On-demand training, versioning, and release of the model
 
 on:
-  push: # temporarily used for testing
-    branches:
-      - 'f9-automated-training-and-release-of-models'
   workflow_dispatch:
     inputs:
       tag_name:
