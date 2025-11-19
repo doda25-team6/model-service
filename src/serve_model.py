@@ -1,16 +1,38 @@
 """
 Flask API of the SMS Spam detection model model.
 """
-import joblib
-from flask import Flask, jsonify, request
-from flasgger import Swagger
-import pandas as pd
 import os
 
-from text_preprocessing import prepare, _extract_message_len, _text_process
+import joblib
+from flasgger import Swagger
+from flask import Flask, jsonify, request
+from text_preprocessing import (  # noqa: F401
+    _extract_message_len,
+    _text_process,
+    prepare,
+)
 
 app = Flask(__name__)
 swagger = Swagger(app)
+
+
+@app.route('/')
+def home():
+    return jsonify({
+        "message": "SMS Spam Detection API",
+        "endpoints": {
+            "predict": "/predict (POST only)",
+            "docs": "/apidocs/",
+            "health": "/health"
+        },
+        "usage": "POST to /predict with JSON: {'sms': 'your message here'}"
+    })
+
+
+@app.route('/health')
+def health():
+    return jsonify({"status": "healthy", "service": "model-service"})
+
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -40,7 +62,7 @@ def predict():
     processed_sms = prepare(sms)
     model = joblib.load('output/model.joblib')
     prediction = model.predict(processed_sms)[0]
-    
+
     res = {
         "result": prediction,
         "classifier": "decision tree",
@@ -49,7 +71,8 @@ def predict():
     print(res)
     return jsonify(res)
 
+
 if __name__ == '__main__':
-    #clf = joblib.load('output/model.joblib')
+    # clf = joblib.load('output/model.joblib')
     port = int(os.getenv("SERVER_PORT", 8081))
     app.run(host="0.0.0.0", port=port, debug=True)
