@@ -41,22 +41,22 @@ jobs:
         run: |
           echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
-      # - name: Version Model
+      - name: Version Model
       #   env:
       #     JOB_VERSION:  ${{ steps.get_version.outputs.VERSION }}
-      #   run: |
-      #     # Iterate through files in the 'output' directory and rename them
-      #     for file in output/*; do
-      #       if [ -f "$file" ]; then
-      #         # Get the filename without the path, add the version suffix, keep the extension
-      #         filename=$(basename "$file")
-      #         extension="${filename##*.}"
-      #         filename_without_ext="${filename%.*}"
-      #         new_filename="${filename_without_ext}-${JOB_VERSION}.${extension}"
-      #         mv "./$file" "./output/$new_filename"
-      #         echo "Renamed $filename to $new_filename"
-      #       fi
-      #     done
+        run: |
+          # Iterate through files in the 'output' directory and rename them
+          for file in output/*; do
+            if [ -f "$file" ]; then
+              # Get the filename without the path, add the version suffix, keep the extension
+              filename=$(basename "$file")
+              extension="${filename##*.}"
+              filename_without_ext="${filename%.*}"
+              new_filename="${filename_without_ext}-latest.${extension}"
+              mv "./$file" "./output/$new_filename"
+              echo "Renamed $filename to $new_filename"
+            fi
+          done
 
       - name: Upload versioned model files
         uses: actions/upload-artifact@v4
