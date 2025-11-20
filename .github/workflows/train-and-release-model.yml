@@ -17,19 +17,24 @@ jobs:
     permissions:
       contents: read # write access not needed in this job
 
+    # run training and versioning inside the docker container
+    # to avoid permission issues
+    container:
+          image: python:3.12.9-slim
+          options: --user root
+
     outputs:
       version: steps.get_version.outputs.VERSION
 
     steps:
       - uses: actions/checkout@v5
-
-      - name: Build local image
-        run: docker build -t model-trainer .
-
       - name: Train model
         run: |
-          mkdir -p output
-          docker run -v $PWD/output:/app/output model-trainer
+          echo "Current working directory: $PWD"
+          pip install -r requirements.txt
+          mkdir output
+          python src/read_data.py
+          python src/text_preprocessing.py
 
       - name: Extract version
         id: get_version
