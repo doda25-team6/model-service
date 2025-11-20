@@ -32,18 +32,18 @@ jobs:
         run: |
           echo "Current working directory: $PWD"
           pip install -r requirements.txt
-          mkdir output
+          mkdir -p output
           python src/read_data.py
           python src/text_preprocessing.py
 
-      - name: Extract version
-        id: get_version
-        run: |
-          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      # - name: Extract version
+      #   id: get_version
+      #   run: |
+      #     echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
       - name: Version Model
-      #   env:
-      #     JOB_VERSION:  ${{ steps.get_version.outputs.VERSION }}
+        env:
+          JOB_VERSION:  ${{ github.event.inputs.tag_name }}
         run: |
           # Iterate through files in the 'output' directory and rename them
           for file in output/*; do
@@ -52,7 +52,7 @@ jobs:
               filename=$(basename "$file")
               extension="${filename##*.}"
               filename_without_ext="${filename%.*}"
-              new_filename="${filename_without_ext}-latest.${extension}"
+              new_filename="${filename_without_ext}-${JOB_VERSION}.${extension}"
               mv "./$file" "./output/$new_filename"
               echo "Renamed $filename to $new_filename"
             fi
