@@ -15,7 +15,7 @@ RUN pip install --prefix=/install -r requirements.txt
 
 # Copy source code and data
 COPY ./src/ ./src
-COPY ./ ./smsspamcollection
+COPY ./smsspamcollection ./smsspamcollection
 
 # Install packages to system location and train the model
 RUN pip install -r requirements.txt
