@@ -53,7 +53,7 @@ jobs:
               extension="${filename##*.}"
               filename_without_ext="${filename%.*}"
               new_filename="${filename_without_ext}-${JOB_VERSION}.${extension}"
-              mv "$file" "output/$new_filename"
+              mv "./$file" "./output/$new_filename"
               echo "Renamed $filename to $new_filename"
             fi
           done
