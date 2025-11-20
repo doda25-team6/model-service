@@ -10,12 +10,12 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install Python dependencies
-COPY model-service/requirements.txt .
+COPY ./requirements.txt .
 RUN pip install --prefix=/install -r requirements.txt
 
 # Copy source code and data
-COPY model-service/src/ ./src
-COPY model-service/smsspamcollection/ ./smsspamcollection
+COPY ./src/ ./src
+COPY ./smsspamcollection/ ./smsspamcollection
 
 # Install packages to system location and train the model
 RUN pip install -r requirements.txt
