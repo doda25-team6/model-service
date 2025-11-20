@@ -15,14 +15,12 @@ RUN pip install --prefix=/install -r requirements.txt
 
 # Copy source code and data
 COPY ./src/ ./src
-COPY ./smsspamcollection ./smsspamcollection
 
 # Install packages to system location and train the model
 RUN pip install -r requirements.txt
 
 # Train the model to generate required files
 ENV PYTHONPATH=/app/src
-RUN mkdir -p output && python src/text_preprocessing.py && python src/text_classification.py
 
 # Stage 2: Runtime
 FROM python:3.11-slim
@@ -32,9 +30,6 @@ WORKDIR /app
 
 COPY --from=builder /install /usr/local
 COPY --from=builder /app/src ./src
-COPY --from=builder /app/output ./output
-
-RUN mkdir -p output
 
 # F6: configurable port
 ENV SERVER_PORT=${SERVER_PORT:-8081}
