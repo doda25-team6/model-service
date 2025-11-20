@@ -1,9 +1,6 @@
 name: On-demand training, versioning, and release of the model
 
 on:
-  push:
-    branches:
-      f9-automated-training-and-release-of-models
   workflow_dispatch:
     inputs:
       tag_name:
@@ -83,7 +80,7 @@ jobs:
         env: 
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          RELEASE_TAG=${{ needs.train-and-version.outputs.version }}
+          RELEASE_TAG=${{ github.event.inputs.tag_name }}
           gh release create "$RELEASE_TAG" ./output/* \
             --title "Release $RELEASE_TAG of spam-checking model files" \
             --notes "Automated release notes"
