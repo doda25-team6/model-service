@@ -16,7 +16,7 @@ RUN pip install --prefix=/install -r requirements.txt
 # Copy source code and data
 COPY ./src/ ./src
 
-# Install packages to system location and train the model
+# Install packages to system location
 RUN pip install -r requirements.txt
 
 # Train the model to generate required files
@@ -30,6 +30,10 @@ WORKDIR /app
 
 COPY --from=builder /install /usr/local
 COPY --from=builder /app/src ./src
+
+# Directory where the volume will be mounted in the container
+# Without this, user permissions might conflict
+RUN mkdir -p /app/output
 
 # F6: configurable port
 ENV SERVER_PORT=${SERVER_PORT:-8081}
