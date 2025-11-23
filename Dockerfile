@@ -40,7 +40,7 @@ COPY ./smsspamcollection/ ./smsspamcollection
 # Without this, user permissions might conflict
 RUN mkdir -p /app/output
 # Copy Model Files
-COPY ./output/ ./output
+# COPY ./output/ ./output
 
 # F6: configurable port
 ENV SERVER_PORT=${SERVER_PORT:-8081}
