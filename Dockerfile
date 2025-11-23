@@ -15,6 +15,7 @@ RUN pip install --prefix=/install -r requirements.txt
 
 # Copy source code and data
 COPY ./src/ ./src
+COPY ./smsspamcollection/ ./smsspamcollection
 
 # Install packages to system location
 RUN pip install -r requirements.txt
@@ -31,9 +32,15 @@ WORKDIR /app
 COPY --from=builder /install /usr/local
 COPY --from=builder /app/src ./src
 
+# Copy source code
+COPY ./src/ ./src
+COPY ./smsspamcollection/ ./smsspamcollection
+
 # Directory where the volume will be mounted in the container
 # Without this, user permissions might conflict
 RUN mkdir -p /app/output
+# Copy Model Files
+COPY ./output/ ./output
 
 # F6: configurable port
 ENV SERVER_PORT=${SERVER_PORT:-8081}
