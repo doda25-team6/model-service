@@ -32,11 +32,7 @@ jobs:
           mkdir -p output
           python src/read_data.py
           python src/text_preprocessing.py
-
-      # - name: Extract version
-      #   id: get_version
-      #   run: |
-      #     echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          python src/text_classification.py
 
       - name: Version Model
         env:

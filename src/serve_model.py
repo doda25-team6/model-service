@@ -1,5 +1,5 @@
 """
-Flask API of the SMS Spam detection model model.
+Flask API of the SMS Spam detection model.
 """
 import os
 
@@ -14,40 +14,56 @@ from text_preprocessing import (  # noqa: F401
 import requests
 
 MODEL_DIR = os.getenv("MODEL_DIR", "/app/output")
-MODEL_PATH = os.path.join(MODEL_DIR, 'model.joblib')
-DOWNLOAD_URL = "https://github.com/doda25-team6/model-service/releases/download/v0.1.2/preprocessor-v0.1.2.joblib"
+MODEL_URL = os.getenv("MODEL_URL", "")
+MODEL_PATH = os.path.join(MODEL_DIR, MODEL_URL.split('/')[-1])
+PREPROCESSOR_URL = os.getenv("PREPROCESSOR_URL", "")
+PREPROCESSOR_PATH = os.path.join(MODEL_DIR, PREPROCESSOR_URL.split('/')[-1])
+
+# DOWNLOAD_URL = "https://github.com/doda25-team6/model-service/releases/download/v0.1.2/preprocessor-v0.1.2.joblib"
 
 # Global variable to hold the loaded model
 clf = None
 
-def dynamically_load_model():
+def dynamically_load_model_files():
     """
-    Checks if the model exists in the volume mount path. If not, downloads it.
-    Loads the model into the global 'clf' variable.
+    Stores the loaded model and preprocessor into global variables.
     """
     global clf
 
-    if os.path.exists(MODEL_PATH):
-        print(f"Loading model from volume mount: {MODEL_PATH}")
-        clf = joblib.load(MODEL_PATH)
+    clf = dynamically_load_file(MODEL_PATH, MODEL_URL)
+    # just need the preprocessor to be loaded in the path
+    _ = dynamically_load_file(PREPROCESSOR_PATH, PREPROCESSOR_URL)
+
+def dynamically_load_file(path, url):
+    """
+    Checks if the model exists in the volume mount path. If not, downloads it.
+    Returns the loaded model.
+    """
+    if os.path.exists(path):
+        print(f"Loading model from volume mount: {path}")
+        return joblib.load(path)
     else:
-        print(f"Model not found at {MODEL_PATH}. Attempting to download from {DOWNLOAD_URL}...")
+        print(f"Model not found at {path}. Attempting to download from {url}...")
+
+        if not url:
+            raise RuntimeError(f"No URL is provided for {path}")
+
         try:
-            os.makedirs(MODEL_DIR, exist_ok=True)
-            response = requests.get(DOWNLOAD_URL, stream=True)
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            response = requests.get(url, stream=True)
             response.raise_for_status()
-            with open(MODEL_PATH, 'wb') as f:
+            with open(path, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=8192):
                     f.write(chunk)
             print("Download complete.")
-            clf = joblib.load(MODEL_PATH)
+            return joblib.load(path)
         except requests.exceptions.RequestException as e:
             print(f"Error downloading model: {e}")
             raise RuntimeError("Could not load or download the model file.")
 
+
 app = Flask(__name__)
 swagger = Swagger(app)
-
 
 @app.route('/')
 def home():
@@ -106,6 +122,6 @@ def predict():
 
 if __name__ == '__main__':
     # Load or download model before starting the app
-    dynamically_load_model()
+    dynamically_load_model_files()
     port = int(os.getenv("SERVER_PORT", 8081))
     app.run(host="0.0.0.0", port=port, debug=True)
