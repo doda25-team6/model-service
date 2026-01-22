@@ -49,14 +49,23 @@ def dynamically_load_file(path, url):
             raise RuntimeError(f"No URL is provided for {path}")
 
         try:
+            print("step11")
             os.makedirs(os.path.dirname(path), exist_ok=True)
+            print("step1")
             response = requests.get(url, stream=True)
+            print("step2")
             response.raise_for_status()
+            print("step3")
             with open(path, 'wb') as f:
+                print("step4")
                 for chunk in response.iter_content(chunk_size=8192):
                     f.write(chunk)
+                    print("step5")
+            print("step6")
             print("Download complete.")
+            print("step7")
             return joblib.load(path)
+            print("step8")
         except requests.exceptions.RequestException as e:
             print(f"Error downloading model: {e}")
             raise RuntimeError("Could not load or download the model file.")
