@@ -119,11 +119,22 @@ def predict():
     sms = input_data.get('sms')
     processed_sms = prepare(sms)
     prediction = clf.predict(processed_sms)[0]
+    
+    # Get prediction probabilities for confidence score
+    try:
+        probabilities = clf.predict_proba(processed_sms)[0]
+        # Confidence is the probability of the predicted class
+        classes = clf.classes_
+        predicted_class_idx = list(classes).index(prediction)
+        confidence = float(probabilities[predicted_class_idx])
+    except AttributeError:
+        confidence = None
 
     res = {
         "result": prediction,
         "classifier": "decision tree",
-        "sms": sms
+        "sms": sms,
+        "confidence": confidence
     }
     print(res)
     return jsonify(res)
